@@ -50,8 +50,8 @@ Second !exec:  claude -p --output-format json --resume abc123 → SAME conversat
 ### 1. Clone & install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/deepseek-feishu-bot.git
-cd deepseek-feishu-bot
+git clone https://github.com/hzhijian890-sketch/pocket-claude.git
+cd pocket-claude
 pip install -r requirements.txt
 ```
 
@@ -96,7 +96,7 @@ All optional — defaults work for most setups.
 ## 📁 Project Structure
 
 ```
-deepseek-feishu-bot/
+pocket-claude/
 ├── bot.py              # Main bot (370 lines)
 ├── requirements.txt    # Python dependencies
 ├── .env.example        # Config template
