@@ -50,7 +50,7 @@ Second !exec:  claude -p --output-format json --resume abc123 → SAME conversat
 ### 1. Clone & install
 
 ```bash
-git clone https://github.com/hzhijian890-sketch/pocket-claude.git
+git clone https://github.com/05zhijian/pocket-claude.git
 cd pocket-claude
 pip install -r requirements.txt
 ```
