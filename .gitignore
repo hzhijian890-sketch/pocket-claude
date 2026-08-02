@@ -1,0 +1,21 @@
+# Environment (contains secrets)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Legacy task queue (V1)
+tasks/
+
+# Output artifacts
+*.html
