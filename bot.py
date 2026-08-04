@@ -1,20 +1,29 @@
 """
-bot.py — Feishu x Claude Code bridge with multi-turn session support.
+bot.py — Feishu x Claude Code bridge (v1.1, 1120 lines, single-file).
 
 Architecture:
   Feishu message → handle_message
-                     ├─ !file → worker thread → upload file to Feishu → file message
-                     ├─ !exec → worker thread → claude -p --output-format json → reply
-                     └─ normal  → DeepSeek chat API
+                     ├─ !exec  → Claude Code single task
+                     ├─ !auto  → multi-step automation (plan + execute)
+                     ├─ !file  → file search + upload to Feishu
+                     ├─ !status → PC health (CPU/memory via ctypes)
+                     ├─ !check  → directory browser with pagination
+                     └─ normal → DeepSeek V4 Flash chat
 
-Session continuity:
-  First call:  claude -p --output-format json → returns session_id
-  Next calls:  --resume <session_id> → same conversation, preserved context
-  After 30 min idle: session_id cleared, next call starts fresh.
-
-File transfer:
-  !file C:\\path\\to\\report.pdf  →  uploads the file to Feishu, sends to your phone
-  Aliases: !send, !文件, file:, send:
+Sections (line numbers approximate):
+   50   Configuration & constants
+  117   DeepSeek API (ask_deepseek)
+  145   Feishu messaging (send_message, send_file_message)
+  173   File search (_search_files)
+  215   File transfer (run_file_transfer)
+  395   Auto task (run_auto_task, _parse_plan_json)
+  554   System status (run_status, ctypes CPU/memory)
+  648   Directory browser (run_check, _list_dir)
+  776   ClaudeSession (multi-turn via --resume)
+  859   SessionManager (per-user session lifecycle)
+  887   Background task execution (run_claude_task)
+  919   Event handler (handle_message, command routing)
+ 1069   Entry point (main, WebSocket client)
 
 Usage:
   python bot.py
@@ -29,6 +38,7 @@ try:
     from ctypes import wintypes, byref, Structure, c_uint64, c_uint32, sizeof
 except ImportError:
     ctypes = None  # non-Windows platform
+import shutil
 import subprocess
 import sys
 import threading
@@ -1078,9 +1088,9 @@ def main() -> None:
         logger.error(f"Missing config: {', '.join(missing)}. Check your .env file.")
         sys.exit(1)
 
-    if not os.path.isfile(CLAUDE_EXE):
+    if not shutil.which(CLAUDE_EXE):
         logger.error(f"Claude CLI not found: {CLAUDE_EXE}")
-        logger.error("Set the correct CLAUDE_PATH in .env")
+        logger.error("Set the correct CLAUDE_PATH in .env or ensure claude is in PATH")
         sys.exit(1)
 
     dispatcher = (
